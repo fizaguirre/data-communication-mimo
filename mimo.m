@@ -7,7 +7,7 @@ function [] = mimo( Nt, Nr )
     NP = Eb ./ (EbN0_lin);
     NA = sqrt(NP); %amplitude é a raiz quadrada da potência
     
-    nb = 50000;
+    nb = 500;
     data = complex(2*randi([0 1], nb, 1)-1);
     
     
@@ -21,9 +21,11 @@ function [] = mimo( Nt, Nr )
     
     ber_zf = zeros(1, length(EbN0));
     ber_nc = zeros(1, length(EbN0));
+    ber_snc = zeros(1, length(EbN0));
     
     rec_data_nc = [];
     rec_data_zf = [];
+    rec_data_snc = [];
     
     for i = EbN0
         for j = 1:Nt:length(data)
@@ -41,15 +43,20 @@ function [] = mimo( Nt, Nr )
             rec_data_zf = [rec_data_zf ; x_];
             
             x_ = nulling_and_canceling(H,y);
-            rec_data_nc= [rec_data_nc ; x_];
+            rec_data_nc = [rec_data_nc ; x_];
+            
+            x_ = sorted_nulling_and_canceling(H, y);
+            rec_data_snc = [rec_data_snc ; x_];
         end
         ber_zf(i) = sum(sign(data') ~= rec_data_zf') / length(data);
         ber_nc(i) = sum(sign(data') ~= rec_data_nc') / length(data);
+        ber_snc(i) = sum(sign(data') ~= rec_data_snc') / length(data);
         rec_data_zf = [];
         rec_data_nc = [];
+        rec_data_snc = [];
     end
     
-    semilogy(EbN0, ber_zf, 'r*', EbN0, ber_nc, 'go', 'LineWidth', 2);
+    semilogy(EbN0, ber_zf, 'r*', EbN0, ber_nc, 'go', ber_snc, 'b-', 'LineWidth', 2);
     grid on;
     title('MIMO - BER BPSK');
     legend('Medido');
