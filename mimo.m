@@ -1,4 +1,4 @@
-function [] = mimo( Nt, Nr )
+function [] = mimo( Nt, Nr, num_bits)
     % Prepara as constantes da simulacao
     MaxEbN0 = 10;
     Eb = 1;
@@ -7,8 +7,7 @@ function [] = mimo( Nt, Nr )
     NP = Eb ./ (EbN0_lin);
     NA = sqrt(NP); %amplitude é a raiz quadrada da potência
     
-    nb = 500;
-    data = complex(2*randi([0 1], nb, 1)-1);
+    data = bpsk(num_bits);
     
     
     % Prepara os vetores utilizados na comunicao MIMO
@@ -22,6 +21,8 @@ function [] = mimo( Nt, Nr )
     ber_zf = zeros(1, length(EbN0));
     ber_nc = zeros(1, length(EbN0));
     ber_snc = zeros(1, length(EbN0));
+    
+    plot_data(EbN0, ber_zf, ber_nc, ber_snc);
     
     rec_data_nc = [];
     rec_data_zf = [];
@@ -51,17 +52,15 @@ function [] = mimo( Nt, Nr )
         ber_zf(i) = sum(sign(data') ~= rec_data_zf') / length(data);
         ber_nc(i) = sum(sign(data') ~= rec_data_nc') / length(data);
         ber_snc(i) = sum(sign(data') ~= rec_data_snc') / length(data);
+        
+        plot_data(EbN0, ber_zf, ber_nc, ber_snc);
+        
         rec_data_zf = [];
         rec_data_nc = [];
         rec_data_snc = [];
     end
     
-    semilogy(EbN0, ber_zf, 'r*', EbN0, ber_nc, 'go', ber_snc, 'b-', 'LineWidth', 2);
-    grid on;
-    title('MIMO - BER BPSK');
-    legend('Medido');
-    ylabel('BER');
-    xlabel('Eb/N0');
+    plot_data(EbN0, ber_zf, ber_nc, ber_snc);
      
 end
 
