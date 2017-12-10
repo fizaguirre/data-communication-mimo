@@ -1,46 +1,62 @@
+%%
+% Função principal do trabalho. Executa a simulação propriamente dita.
+%
+% Nt: número de antenas transmissoras (colunas da matriz H)
+% Nr: número de antenas receptoras (linhas da matriz H)
+% num_bits: número de bits transmitidos para cada Eb/N0
+%
 function [] = mimo( Nt, Nr, num_bits)
+    
+    % Parâmetro da simulação
+    MaxEbN0_dB = 10; % máximo Eb/N0 simulado (em dB)
+    
     % Prepara as constantes da simulacao
-    MaxEbN0 = 10;
     Eb = 1;
-    EbN0 = 1:1:MaxEbN0;
-    EbN0_lin = MaxEbN0 .^ (EbN0/MaxEbN0);
+    EbN0_dB = 0:1:MaxEbN0_dB;
+    EbN0_lin = 10 .^ (EbN0_dB/10);
     NP = Eb ./ (EbN0_lin);
-    NA = sqrt(NP); %amplitude � a raiz quadrada da pot�ncia
+    NA = sqrt(NP); %amplitude é a raiz quadrada da potência
     
     data = bpsk(num_bits);
-    
     
     % Prepara os vetores utilizados na comunicao MIMO
     % x - dados enviados
     % y - dados recebidos
-    % H channel impulse response matrix
     x = zeros(Nt, 1);
-    y = zeros(Nt, 1);
-    H = zeros(Nt, Nr);
+    y = zeros(Nr, 1);
     
-    ber_zf = zeros(1, length(EbN0));
-    ber_nc = zeros(1, length(EbN0));
-    ber_snc = zeros(1, length(EbN0));
+    % BER para cada um dos três algoritmos
+    ber_zf  = zeros(1, length(EbN0_lin));
+    ber_nc  = zeros(1, length(EbN0_lin));
+    ber_snc = zeros(1, length(EbN0_lin));
     
-    plot_data(EbN0, ber_zf, ber_nc, ber_snc);
+    % "Inicia" a janela do plot
+    % (vide documentação dessa função)
+    plot_data(EbN0_dB, ber_zf, ber_nc, ber_snc);
     
-    rec_data_nc = [];
-    rec_data_zf = [];
-    rec_data_snc = [];
-    
-    for i = EbN0
+    for i = 1:length(EbN0_lin)
+        
+        % Bits estimados pelo receptor para cada algoritmo
+        rec_data_zf  = [];
+        rec_data_nc  = [];
+        rec_data_snc = [];
+        
         for j = 1:Nt:length(data)
+            
+            % Chunk de dados para transmitir
             x = data(j:j+Nt-1); % bpsk('encode', data(j:j+Nt-1));
-            H = cirm(Nt, Nr);
+            
+            % Gera uma matriz H para cada chunk de dados transmitidos
+            H = cirm(Nr, Nt);
 
-            % ruido
-            n = NA(i)*complex(randn(1, Nt), randn(1, Nt))*sqrt(0.5);
+            % Ruído
+            n = NA(i)*complex(randn(1,Nr), randn(1,Nr))*sqrt(0.5);
             y = (H * x) + n';
             
             
-            %zero-forcing
-            x_ = slice(zero_forcing(H, y));
-            %rec_data_zf = vertcat(rec_data_zf, x_);
+            % Detecção MIMO com os 3 algoritmos
+            
+            x_ = zero_forcing(H, y);
             rec_data_zf = [rec_data_zf ; x_];
             
             x_ = nulling_and_canceling(H,y);
@@ -49,18 +65,20 @@ function [] = mimo( Nt, Nr, num_bits)
             x_ = sorted_nulling_and_canceling(H, y);
             rec_data_snc = [rec_data_snc ; x_];
         end
-        ber_zf(i) = sum(sign(data') ~= rec_data_zf') / length(data);
-        ber_nc(i) = sum(sign(data') ~= rec_data_nc') / length(data);
+        
+        % Computa do BER para algoritmo para esse valor de Eb/N0 em particular
+        ber_zf(i)  = sum(sign(data') ~= rec_data_zf') / length(data);
+        ber_nc(i)  = sum(sign(data') ~= rec_data_nc') / length(data);
         ber_snc(i) = sum(sign(data') ~= rec_data_snc') / length(data);
         
-        plot_data(EbN0, ber_zf, ber_nc, ber_snc);
-        
-        rec_data_zf = [];
-        rec_data_nc = [];
-        rec_data_snc = [];
+        % Atualiza o plot
+        plot_data(EbN0_dB, ber_zf, ber_nc, ber_snc);
     end
     
-    plot_data(EbN0, ber_zf, ber_nc, ber_snc);
-     
+    plot_data(EbN0_dB, ber_zf, ber_nc, ber_snc);
+    
+    % Para fins de inspeção dos BER's
+    EbN0_dB, ber_zf, ber_nc, ber_snc
+    
 end
 

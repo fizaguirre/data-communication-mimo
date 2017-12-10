@@ -2,10 +2,10 @@ function [ ] = plot_data( ebn0, bzf, bnc, bsnc )
 
     semilogy(ebn0, bzf, 'r', ebn0, bnc, 'g', ebn0, bsnc, 'b', 'LineWidth', 2);
     grid on;
-    title('MIMO - BER BPSK');
+    title('MIMO - BER (BPSK Modulated)');
     legend('Zero Forcing', 'Nulling Canceling', 'Sorted Nulling Canceling');
     ylabel('BER');
-    xlabel('Eb/N0');
+    xlabel('Eb/N0 (dB)');
     drawnow;
 
 end
