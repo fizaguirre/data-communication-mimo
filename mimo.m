@@ -59,10 +59,10 @@ function [] = mimo( Nt, Nr, num_bits)
             x_ = zero_forcing(H, y);
             rec_data_zf = [rec_data_zf ; x_];
             
-            x_ = nulling_and_canceling(H,y);
+            x_ = nulling_and_canceling(H, y, Nr, Nt);
             rec_data_nc = [rec_data_nc ; x_];
             
-            x_ = sorted_nulling_and_canceling(H, y);
+            x_ = sorted_nulling_and_canceling(H, y, Nr, Nt);
             rec_data_snc = [rec_data_snc ; x_];
         end
         
