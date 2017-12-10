@@ -13,3 +13,5 @@ https://www.mathworks.com/help/lte/ug/find-channel-impulse-response.html
 https://www.mathworks.com/matlabcentral/answers/25159-complex-gaussian-noise-signals-with-zero-mean-and-different-variance
 
 https://www.mathworks.com/help/lte/ug/find-channel-impulse-response.html
+
+http://users.ece.utexas.edu/~hvikalo/pubs/mimochapter.pdf
